@@ -4,14 +4,31 @@ version: 2.1
 jobs:
   print-hello:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - run: echo hello
   print-world:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - run: echo world
+  save_hello_world_output:
+    docker:
+      - image: cimg/node:13.8.0
+    steps:
+      - run: echo "This is a sample output text" > output.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - output.txt
+  print_output_file:
+    docker:
+      - image: cimg/node:13.8.0
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/output.txt
+
 # Orchestrate jobs using workflows
 workflows:
   welcome:
@@ -20,3 +37,10 @@ workflows:
       - print-world:
           requires:
             - print-hello
+  my_workflow:
+    jobs:
+      - save_hello_world_output
+      - print_output_file:
+          requires:
+            - save_hello_world_output
+            
